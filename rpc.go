@@ -77,14 +77,3 @@ func (m *MinionCoordinator) Handle(client *rpc.Client, conn *service.Conn) {
 	)
 	log.Printf("Heard back: %s %s\n", ftbfs, err)
 }
-
-func main() {
-	switch os.Args[1] {
-	case "minion":
-		BeAMinion()
-	case "coordinator":
-		BeACoordinator()
-	default:
-		log.Fatalf("Don't know what to do :(\n")
-	}
-}
