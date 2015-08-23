@@ -10,22 +10,6 @@ import (
 
 /* */
 
-func BeACoordinator(cert, key, ca, host string, port int) {
-	log.Printf("Bringing TCP server online!\n")
-	l, err := service.ListenFromKeys(
-		fmt.Sprintf("%s:%d", host, port),
-		cert, key, ca,
-	)
-	if err != nil {
-		log.Fatalf("Server Ouchie! %s", err)
-	}
-	coordinator := MinionCoordinator{}
-	log.Printf("Great, waiting for Minions, and telling them what to do!\n")
-	service.Handle(l, &coordinator)
-}
-
-/**/
-
 type MinionCoordinator struct{ service.Coordinator }
 
 func (m *MinionCoordinator) Handle(client *rpc.Client, conn *service.Conn) {
@@ -47,3 +31,21 @@ func (m *MinionCoordinator) Handle(client *rpc.Client, conn *service.Conn) {
 	)
 	log.Printf("Heard back: %s %s\n", ftbfs, err)
 }
+
+/* */
+
+func BeACoordinator(cert, key, ca, host string, port int) {
+	log.Printf("Bringing TCP server online!\n")
+	l, err := service.ListenFromKeys(
+		fmt.Sprintf("%s:%d", host, port),
+		cert, key, ca,
+	)
+	if err != nil {
+		log.Fatalf("Server Ouchie! %s", err)
+	}
+	coordinator := MinionCoordinator{}
+	log.Printf("Great, waiting for Minions, and telling them what to do!\n")
+	service.Handle(l, &coordinator)
+}
+
+/**/
