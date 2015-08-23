@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/rpc"
-	"os"
 	"strings"
 
 	"pault.ag/go/service"
@@ -11,15 +11,14 @@ import (
 
 /* */
 
-func BeAMinion() {
+func BeAMinion(cert, key, ca, host string, port int) {
 	node := MinionNode{}
 	log.Printf("Bringing Minion online\n")
 	node.Register()
 	log.Printf("Diling coordinator\n")
 	conn, err := service.DialFromKeys(
-		"cassiel.pault.ag:8888",
-		"certs/personal.crt", "certs/personal.key",
-		"certs/ca.crt",
+		fmt.Sprintf("%s:%d", host, port),
+		cert, key, ca,
 	)
 	if err != nil {
 		log.Fatalf("Error! %s\n", err)
@@ -39,12 +38,11 @@ func (m *MinionNode) Register() {
 
 /* */
 
-func BeACoordinator() {
+func BeACoordinator(cert, key, ca, host string, port int) {
 	log.Printf("Bringing TCP server online!\n")
 	l, err := service.ListenFromKeys(
-		"cassiel.pault.ag:8888",
-		"certs/cassiel.crt", "certs/cassiel.key",
-		"certs/ca.crt",
+		fmt.Sprintf("%s:%d", host, port),
+		cert, key, ca,
 	)
 	if err != nil {
 		log.Fatalf("Server Ouchie! %s", err)
