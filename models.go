@@ -5,11 +5,11 @@ import (
 	"net/rpc"
 )
 
+/* {{{ net/rpc RPC target helpers */
+
 type Minion struct {
 	Arches []string
 }
-
-/* */
 
 type BuildTarget struct {
 	Arch     string
@@ -36,8 +36,6 @@ type BuildResult struct {
 	FTBFS bool
 }
 
-/* */
-
 func (m *Minion) Build(target *BuildTarget, ret *BuildResult) error {
 	log.Printf("Doing build: %s/%s\n", target.Target.Suite, target.Target.Chroot)
 	log.Printf("   -> %s (%s)\n", target.DSC, target.Arch)
@@ -53,6 +51,10 @@ func (m *Minion) GetArches(_ interface{}, ret *[]string) error {
 	*ret = m.Arches
 	return nil
 }
+
+/* }}} */
+
+/* {{{ Local wrapper for RDP transport */
 
 type RemoteMinion struct {
 	*rpc.Client
@@ -87,3 +89,7 @@ func (r *RemoteMinion) Build(
 	}
 	return ret.FTBFS, nil
 }
+
+/* }}} */
+
+// vim: foldmethod=marker

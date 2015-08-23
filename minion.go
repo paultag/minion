@@ -34,3 +34,5 @@ func (m *MinionNode) Register() {
 	minion := Minion{Arches: []string{"amd64", "all"}}
 	rpc.Register(&minion)
 }
+
+// vim: foldmethod=marker

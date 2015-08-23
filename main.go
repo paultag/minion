@@ -24,3 +24,5 @@ func main() {
 		log.Fatalf("Don't know what to do :(\n")
 	}
 }
+
+// vim: foldmethod=marker
