@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+whom=tag@pault.ag
+
+if [ "x$1" = "x" ]; then
+    echo "Enter a working directory for the CA stuff!"
+    exit 1
+fi
+
+WHERE=$1
+cd ${WHERE}
+
+name=$2
+target=certs/${name}.crt
+
+mail \
+    -a ${target} \
+    -a cacert.pem \
+    -s "Your signed key ${name}" \
+    ${whom} <<EOF
+Heyya!
+
+Here's a copy of your signed key, attached. In addition, I copied the CA root
+.crt, so you can use that, too.
+
+Fondly,
+  Your automated CA stuff
+EOF
