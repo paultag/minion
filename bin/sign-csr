@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+if [ "x$1" = "x" ]; then
+    echo "Enter a working directory for the CA stuff!"
+    exit 1
+fi
+WHERE=$1
+cd ${WHERE}
+
+csr=$2
+name=$(basename ${csr} .csr)
+target=certs/${name}.crt
+
+if [ ! -e "${csr}" ]; then
+    echo "Error! Need a valid path to a .csr"
+    exit 1
+fi
+
+if [ -e ${target} ]; then
+    echo "Already signed!"
+    exit 1
+fi
+
+cowsay "Signing the key called ${name}"
+
+sign() {
+openssl ca -config openssl.cnf \
+    -policy policy_anything \
+    -out ${target} -infiles ${csr}
+}
+
+
+sign test $@
+
+openssl x509 -subject -issuer -enddate -noout -in ${target}
+openssl x509 -in ${target} -noout -text
+echo -n "OK for Server: "
+openssl verify -purpose sslserver -CAfile certs/cakey.crt ${target}
+echo -n "OK for Client: "
+openssl verify -purpose sslclient -CAfile certs/cakey.crt ${target}
