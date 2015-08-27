@@ -5,11 +5,17 @@ USERNAME=$(whoami)
 FULL_NAME=$(getent passwd $(whoami) | cut -d ':' -f 5 | cut -d ',' -f 1)
 FQDN=$(hostname --fqdn)
 
+if [ ! -e openssl.cnf ]; then
+    cp /etc/ssl/openssl.cnf .
+    sed -i 's/.*extendedKeyUsage.*/extendedKeyUsage=clientAuth/g' openssl.cnf
+fi
+
 openssl \
     req \
     -new \
     -nodes \
+    -config openssl.cnf \
     -keyout ${FQDN}.key \
     -out ${FQDN}.csr \
-     -subj "/C=US/ST=Internet/L=Internet/O=${FULL_NAME}/OU=${FQDN}/CN=${FQDN}/emailAddress=${USERNAME}@${FQDN}" \
+    -subj "/C=US/ST=Internet/L=Internet/O=${FULL_NAME}/OU=${FQDN}/CN=${FQDN}/emailAddress=${USERNAME}@${FQDN}" \
     -days 365
