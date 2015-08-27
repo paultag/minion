@@ -6,16 +6,26 @@ if [ "x$1" = "x" ]; then
     exit 1
 fi
 WHERE=$1
-cd ${WHERE}
-
 USERNAME=$(whoami)
 FULL_NAME=$(getent passwd $(whoami) | cut -d ':' -f 5 | cut -d ',' -f 1)
 FQDN=$(hostname --fqdn)
 
+openssl \
+    req \
+    -new \
+    -nodes \
+    -keyout ${FQDN}.key \
+    -out ${FQDN}.csr \
+    -subj "/C=US/ST=Internet/L=Internet/O=${FULL_NAME}/OU=${FQDN}/CN=${FQDN}/emailAddress=${USERNAME}@${FQDN}" \
+    -days 365
+
+SERVER_AUTH_CSR=`pwd`/${FQDN}.csr
+
+cd ${WHERE}
+
 mkdir private certs newcerts crl
 
 cp /etc/ssl/openssl.cnf .
-sed -i 's/.*extendedKeyUsage.*/extendedKeyUsage=clientAuth/g' openssl.cnf
 sed -i 's/dir.*=.*.\/demoCA/dir=./g' openssl.cnf
 
 
@@ -41,3 +51,9 @@ ossl -new \
 
 cat certs/cakey.crt private/cakey.key > private/cakey.pem
 cp certs/cakey.crt ./cacert.pem
+
+openssl ca -config openssl.cnf \
+    -policy policy_anything \
+    -out certs/${FQDN}.crt -infiles ${SERVER_AUTH_CSR}
+
+sed -i 's/.*extendedKeyUsage.*/extendedKeyUsage=clientAuth/g' openssl.cnf
