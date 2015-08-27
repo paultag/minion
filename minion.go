@@ -23,7 +23,7 @@ func BeAMinion(cert, key, ca, host string, port int) {
 		log.Fatalf("Error! %s\n", err)
 	}
 	log.Printf("Doing what they say!\n")
-	rpc.ServeConn(conn)
+	service.ServeConn(conn)
 }
 
 /* */
