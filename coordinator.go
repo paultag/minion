@@ -27,6 +27,10 @@ func (m *MinionCoordinator) AddJob(job Job) {
 	m.Jobs[job.Arch] <- job
 }
 
+func (m *MinionCoordinator) Register() {
+	log.Printf("Register\n")
+}
+
 func (m *MinionCoordinator) Handle(client *rpc.Client, conn *service.Conn) {
 	minion := RemoteMinion{client}
 	log.Printf("Got a connection from %s\n", conn.CommonNames[0])

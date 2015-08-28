@@ -5,6 +5,15 @@ import (
 	"net/rpc"
 )
 
+type MinionConfig struct {
+	Cert   string
+	Key    string
+	CaCert string
+	Mode   string
+	Host   string
+	Port   int
+}
+
 /* {{{ net/rpc RPC target helpers */
 
 type Minion struct {
