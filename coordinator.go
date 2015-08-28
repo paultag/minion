@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/rpc"
-	"pault.ag/go/service"
 	"strings"
+
+	"pault.ag/go/service"
 )
 
 /* */
