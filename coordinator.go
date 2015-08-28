@@ -25,6 +25,7 @@ type MinionCoordinator struct {
 }
 
 func (m *MinionCoordinator) AddJob(job Job) {
+	log.Printf("Writing %s <- %s", job.Arch, job)
 	m.Jobs[job.Arch] <- job
 }
 
@@ -34,13 +35,26 @@ func (m *MinionCoordinator) Register() {
 
 func (m *MinionCoordinator) Handle(client *rpc.Client, conn *service.Conn) {
 	minion := RemoteMinion{client}
-	log.Printf("Got a connection from %s\n", conn.CommonNames[0])
+	name := conn.CommonNames[0]
+	log.Printf("Got a connection from %s\n", name)
 
 	arches, err := minion.Arches()
 	if err != nil {
-		log.Fatalf("Ouch: %s\n", err)
+		log.Fatalf("Error: %s\n", err)
 	}
-	log.Printf(" -> They can do %s", strings.Join(arches, ", "))
+
+	log.Printf("%s can handle arches %s\n", name, strings.Join(arches, ", "))
+
+	pipes := []<-chan Job{}
+	for _, arch := range arches {
+		pipes = append(pipes, m.Jobs[arch])
+	}
+
+	for {
+		log.Printf("Waiting for a job for %s\n", name)
+		job := YakYakYakGetAJob(10, pipes...)
+		log.Printf("Got a job!: %s\n", job)
+	}
 }
 
 /* */
@@ -62,7 +76,7 @@ func BeACoordinator(config MinionConfig) {
 		Archives: []Archive{},
 		Target:   ChrootTarget{Chroot: "unstable", Suite: "unstable"},
 		Arch:     "amd64",
-		DSC:      "pool/f/fnord.dsc",
+		DSC:      "pool/f/fnords.dsc",
 	})
 
 	log.Printf("Great, waiting for Minions, and telling them what to do!\n")
