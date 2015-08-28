@@ -10,14 +10,14 @@ import (
 
 /* */
 
-func BeAMinion(cert, key, ca, host string, port int) {
+func BeAMinion(config MinionConfig) {
 	node := MinionNode{}
 	log.Printf("Bringing Minion online\n")
 	node.Register()
 	log.Printf("Diling coordinator\n")
 	conn, err := service.DialFromKeys(
-		fmt.Sprintf("%s:%d", host, port),
-		cert, key, ca,
+		fmt.Sprintf("%s:%d", config.Host, config.Port),
+		config.Cert, config.Key, config.CaCert,
 	)
 	if err != nil {
 		log.Fatalf("Error! %s\n", err)

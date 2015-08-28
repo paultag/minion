@@ -44,11 +44,11 @@ func (m *MinionCoordinator) Handle(client *rpc.Client, conn *service.Conn) {
 
 /* */
 
-func BeACoordinator(cert, key, ca, host string, port int) {
+func BeACoordinator(config MinionConfig) {
 	log.Printf("Bringing TCP server online!\n")
 	l, err := service.ListenFromKeys(
-		fmt.Sprintf("%s:%d", host, port),
-		cert, key, ca,
+		fmt.Sprintf("%s:%d", config.Host, config.Port),
+		config.Cert, config.Key, config.CaCert,
 	)
 	if err != nil {
 		log.Fatalf("Server Ouchie! %s", err)

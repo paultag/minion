@@ -45,11 +45,20 @@ func main() {
 
 	flag.Parse()
 
+	minionRC.Cert = *cert
+	minionRC.Key = *key
+	minionRC.CaCert = *ca
+	minionRC.Mode = *mode
+	minionRC.Host = *host
+	minionRC.Port = *port
+
 	switch *mode {
 	case "minion":
-		BeAMinion(*cert, *key, *ca, *host, *port)
+		BeAMinion(minionRC)
 	case "coordinator":
-		BeACoordinator(*cert, *key, *ca, *host, *port)
+		BeACoordinator(minionRC)
+	case "remote":
+		BeARemote(minionRC)
 	default:
 		log.Fatalf("Don't know what to do :(\n")
 	}
