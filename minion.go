@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/rpc"
+	"strings"
 
 	"pault.ag/go/minion/minion"
 	"pault.ag/go/service"
@@ -15,12 +16,21 @@ var minionCommand = Command{
 	Usage: ``,
 }
 
+var archs *string
+
+func init() {
+	archs = minionCommand.Flag.String("arch", "", "comma seperated arches")
+}
+
 type minionService struct {
 	service.Node
 }
 
 func (m *minionService) Register() {
-	minion := minion.MinionRemote{Arches: []string{"amd64", "all"}}
+	if *archs == "" {
+		log.Fatalf("No archs given\n")
+	}
+	minion := minion.MinionRemote{Arches: strings.Split(*archs, ",")}
 	rpc.Register(&minion)
 }
 
