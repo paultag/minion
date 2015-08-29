@@ -31,8 +31,18 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 	}
 
 	for {
-		job := <-m.BuildChannels.Get(arches[0])
-		client.Build(job)
+		select {
+		case job := <-m.BuildChannels.Get(arches[0]):
+			log.Printf("Telling %s to build\n", conn.Name)
+			ftbfs, err := client.Build(job)
+			if err != nil {
+				log.Printf("Oh god something bad happened: %s\n", err)
+				m.BuildChannels.Get(arches[0]) <- job
+				conn.Close()
+				return
+			}
+			log.Printf("FTBFS: %s", ftbfs)
+		}
 	}
 }
 

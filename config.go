@@ -8,6 +8,8 @@ import (
 	"pault.ag/go/debian/control"
 )
 
+// Model we Unmarshal the MinionRC into using the pault.ag/go/debian/control
+// RFC822 Unmarshaler.
 type MinionConfig struct {
 	// OpenSSL Client or Server .crt to serve to the world.
 	Cert string
@@ -29,6 +31,8 @@ type MinionConfig struct {
 	Mode string
 }
 
+// Read the ~/.minionrc into a MinionConfig struct, if it exists, otherwise
+// return a default empty config. This may be later overridden by CLI flags.
 func GetMinionConfig() MinionConfig {
 	ret := MinionConfig{
 		Host: "localhost",
