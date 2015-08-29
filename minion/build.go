@@ -18,6 +18,6 @@ func (b BuildChannelMap) Get(arch string) chan Build {
 	if channel, ok := b[arch]; ok {
 		return channel
 	}
-	b[arch] = make(chan Build)
+	b[arch] = make(chan Build, 10)
 	return b[arch]
 }
