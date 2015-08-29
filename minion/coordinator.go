@@ -1,7 +1,6 @@
 package minion
 
 import (
-	"log"
 	"net/rpc"
 )
 
@@ -22,17 +21,15 @@ func (p *CoordinatorProxy) QueueBuild(build Build) error {
  *
  */
 
-func NewCoordinatorRemote(buildChannels *map[string]chan Build) CoordinatorRemote {
+func NewCoordinatorRemote(buildChannels *BuildChannelMap) CoordinatorRemote {
 	return CoordinatorRemote{buildChannels: buildChannels}
 }
 
 type CoordinatorRemote struct {
-	buildChannels *map[string]chan Build
+	buildChannels *BuildChannelMap
 }
 
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
-	log.Printf("Queueing %s\n", build.Arch)
-	(*c.buildChannels)[build.Arch] <- build
-	log.Printf("Queued\n")
+	c.buildChannels.Get(build.Arch) <- build
 	return nil
 }

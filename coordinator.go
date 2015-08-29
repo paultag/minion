@@ -12,7 +12,7 @@ import (
 type coordinatorService struct {
 	service.Coordinator
 
-	BuildChannels *map[string]chan minion.Build
+	BuildChannels *minion.BuildChannelMap
 }
 
 func (m *coordinatorService) Register() {
@@ -20,22 +20,19 @@ func (m *coordinatorService) Register() {
 	rpc.Register(&remote)
 }
 
-func (m *coordinatorService) Handle(client *rpc.Client, conn *service.Conn) {
+func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 	log.Printf("Got a connection from %s\n", conn.Name)
-	minion := minion.MinionProxy{client}
+	client := minion.MinionProxy{rpcClient}
 
-	arches, err := minion.GetArches()
+	arches, err := client.GetArches()
 	if err != nil {
 		log.Printf("Error: %s\n", err)
 		return
 	}
-	log.Printf("%s\n", arches)
 
 	for {
-		log.Printf("Consuming\n")
-		job := <-(*m.BuildChannels)["amd64"]
-		log.Printf("Consumed.\n")
-		minion.Build(job)
+		job := <-m.BuildChannels.Get(arches[0])
+		client.Build(job)
 	}
 }
 
@@ -56,7 +53,7 @@ func coordinatorRun(config MinionConfig, cmd *Command, args []string) {
 		log.Fatalf("Server Ouchie! %s", err)
 	}
 
-	buildChannel := map[string]chan minion.Build{}
+	buildChannel := minion.BuildChannelMap{}
 	coordinator := coordinatorService{
 		BuildChannels: &buildChannel,
 	}
