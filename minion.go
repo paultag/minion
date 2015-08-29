@@ -30,7 +30,7 @@ func (m *minionService) Register() {
 	if *archs == "" {
 		log.Fatalf("No archs given\n")
 	}
-	minion := minion.MinionRemote{Arches: strings.Split(*archs, ",")}
+	minion := minion.NewMinionRemote(strings.Split(*archs, ","))
 	rpc.Register(&minion)
 }
 

@@ -1,6 +1,7 @@
 package minion
 
 import (
+	"log"
 	"net/rpc"
 )
 
@@ -30,6 +31,8 @@ type CoordinatorRemote struct {
 }
 
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
+	log.Printf("Queueing %s\n", build.Arch)
 	(*c.buildChannels)[build.Arch] <- build
+	log.Printf("Queued\n")
 	return nil
 }

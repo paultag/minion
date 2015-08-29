@@ -30,6 +30,13 @@ func (m *coordinatorService) Handle(client *rpc.Client, conn *service.Conn) {
 		return
 	}
 	log.Printf("%s\n", arches)
+
+	for {
+		log.Printf("Consuming\n")
+		job := <-(*m.BuildChannels)["amd64"]
+		log.Printf("Consumed.\n")
+		minion.Build(job)
+	}
 }
 
 var coordinatorCommand = Command{
