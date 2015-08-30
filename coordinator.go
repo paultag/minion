@@ -36,10 +36,13 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 			log.Printf("Telling %s to build\n", conn.Name)
 			ftbfs, err := client.Build(job)
 			if err != nil {
-				log.Printf("Oh god something bad happened: %s\n", err)
-				m.BuildChannels.Get(arches[0]) <- job
-				conn.Close()
-				return
+				if err == rpc.ErrShutdown {
+					log.Printf("Client disconnect: %s - %s\n", conn.Name, err)
+					m.BuildChannels.Get(arches[0]) <- job
+					conn.Close()
+					return
+				}
+				log.Printf("Abnormal exit: %s\n", err)
 			}
 			log.Printf("FTBFS: %s", ftbfs)
 		}

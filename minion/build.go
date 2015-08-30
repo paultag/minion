@@ -12,10 +12,11 @@ type Chroot struct {
 }
 
 type Build struct {
-	Archives []Archive
-	Chroot   Chroot
-	DSC      string
-	Arch     string
+	Archives   []Archive
+	Chroot     Chroot
+	DSC        string
+	Arch       string
+	DputTarget string
 }
 
 type BuildChannelMap map[string]chan Build

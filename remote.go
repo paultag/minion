@@ -30,7 +30,7 @@ func remoteRun(config MinionConfig, cmd *Command, args []string) {
 			Target: "unstable",
 		},
 		Arch: "amd64",
-		DSC:  "https://something/f/fnord.dsc",
+		DSC:  "https://people.debian.org/~paultag/tmp/fluxbox_1.3.6~rc1-1.dsc",
 	})
 	log.Printf("Queued\n")
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/rpc"
 	"os"
+	"os/exec"
 
 	"pault.ag/go/sbuild"
 )
@@ -23,6 +24,12 @@ func (m *MinionRemote) GetArches(i *bool, ret *[]string) error {
 	return nil
 }
 
+func attachToStdout(cmd *exec.Cmd) {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+}
+
 func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	cleanup, err := Tempdir()
 	if err != nil {
@@ -30,15 +37,15 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	}
 	defer cleanup()
 
+	/* We're in a tempdir, let's make it dirty */
+
 	build := sbuild.NewSbuild(i.Chroot.Chroot, i.Chroot.Target)
 	build.Arch(i.Arch)
 	build.BuildDepResolver("aptitude")
 	build.Verbose()
 
 	cmd, err := build.BuildCommand(i.DSC)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+	attachToStdout(cmd)
 
 	if err != nil {
 		return err
