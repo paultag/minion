@@ -25,6 +25,10 @@ func remoteRun(config MinionConfig, cmd *Command, args []string) {
 	proxy := minion.CoordinatorProxy{service.Client(conn)}
 	log.Printf("Queueing build\n")
 	proxy.QueueBuild(minion.Build{
+		Chroot: minion.Chroot{
+			Chroot: "unstable",
+			Target: "unstable",
+		},
 		Arch: "amd64",
 		DSC:  "https://something/f/fnord.dsc",
 	})

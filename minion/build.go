@@ -6,8 +6,14 @@ type Archive struct {
 	Suite    string
 }
 
+type Chroot struct {
+	Target string
+	Chroot string
+}
+
 type Build struct {
 	Archives []Archive
+	Chroot   Chroot
 	DSC      string
 	Arch     string
 }
