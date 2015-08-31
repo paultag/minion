@@ -11,12 +11,18 @@ type Chroot struct {
 	Chroot string
 }
 
+type Upload struct {
+	Host    string
+	Port    int
+	Archive string
+}
+
 type Build struct {
-	Archives   []Archive
-	Chroot     Chroot
-	DSC        string
-	Arch       string
-	DputTarget string
+	Archives []Archive
+	Chroot   Chroot
+	DSC      string
+	Arch     string
+	Upload   Upload
 }
 
 type BuildChannelMap map[string]chan Build
