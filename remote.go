@@ -31,6 +31,11 @@ func remoteRun(config MinionConfig, cmd *Command, args []string) {
 		},
 		Arch: "amd64",
 		DSC:  "https://people.debian.org/~paultag/tmp/fluxbox_1.3.6~rc1-1.dsc",
+		Upload: minion.Upload{
+			"Host":    "localhost",
+			"Port":    1984,
+			"Archive": "foo",
+		},
 	})
 	log.Printf("Queued\n")
 }
