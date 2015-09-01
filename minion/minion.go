@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 
+	"pault.ag/go/descend/descend"
 	"pault.ag/go/sbuild"
 )
 
