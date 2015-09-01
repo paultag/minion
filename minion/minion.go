@@ -52,10 +52,33 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	}
 	log.Printf("Doing a build for %s -- waiting\n", i)
 	cmd.Run()
-	log.Printf("Complete.")
-
+	/* set ftbfs here */
+	log.Printf("Complete. Doing upload now")
 	/* dsend this to the server target */
-	return nil
+	err := UploadChanges(m.Config, i, "")
+	log.Printf("Complete. Uploaded.")
+	return err
+}
+
+func UploadChanges(conf MinionConfig, job Build, changesPath string) error {
+	client, err := descend.NewClient(conf.CaCert, conf.Cert, conf.Key)
+	if err != nil {
+		return err
+	}
+
+	changes, err := control.ParseChangesFile(changesPath)
+	if err != nil {
+		return err
+	}
+
+	err = descend.DoPutChanges(
+		client, changes,
+		fmt.Sprintf("%s:%d", job.Upload.Host, job.Upload.Port),
+		job.Upload.Archive,
+	)
+	if err != nil {
+		panic(err)
+	}
 }
 
 /***************************/

@@ -39,7 +39,7 @@ func main() {
 
 	args := flags.Args()
 	if len(args) == 0 {
-		flag.Usage()
+		flags.Usage()
 		return
 	}
 
@@ -52,6 +52,6 @@ func main() {
 		}
 	}
 
-	flag.Usage()
+	flags.Usage()
 	return
 }
