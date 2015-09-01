@@ -2,6 +2,10 @@ package main
 
 import (
 	"flag"
+	"os"
+
+	"pault.ag/go/config"
+	"pault.ag/go/minion/minion"
 )
 
 var commands = []*Command{
@@ -14,29 +18,26 @@ var commands = []*Command{
  * which may optionally set additional arguments. */
 type Command struct {
 	Name  string
-	Run   func(config MinionConfig, cmd *Command, args []string)
+	Run   func(conf minion.MinionConfig, cmd *Command, args []string)
 	Flag  flag.FlagSet
 	Usage string
 }
 
 func main() {
-	config := GetMinionConfig()
+	conf := minion.MinionConfig{
+		Host: "localhost",
+		Mode: "minion",
+		Port: 8765,
+	}
 
-	cert := flag.String("cert", config.Cert, "client or server .crt file")
-	key := flag.String("key", config.Key, "client or server .key file")
-	ca := flag.String("ca", config.CaCert, "client or server ca .crt file")
-	host := flag.String("host", config.Host, "target host, or host to bind to")
-	port := flag.Int("port", config.Port, "target port, or port to bind to")
+	flags, err := config.LoadFlags("minion", &conf)
+	if err != nil {
+		panic(err)
+	}
 
-	flag.Parse()
+	flags.Parse(os.Args[1:])
 
-	config.Cert = *cert
-	config.Key = *key
-	config.CaCert = *ca
-	config.Host = *host
-	config.Port = *port
-
-	args := flag.Args()
+	args := flags.Args()
 	if len(args) == 0 {
 		flag.Usage()
 		return
@@ -46,7 +47,7 @@ func main() {
 		if command.Name == args[0] {
 			command.Flag.Parse(args[1:])
 			args = command.Flag.Args()
-			command.Run(config, command, args)
+			command.Run(conf, command, args)
 			return
 		}
 	}

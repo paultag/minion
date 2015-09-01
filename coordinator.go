@@ -55,7 +55,7 @@ var coordinatorCommand = Command{
 	Usage: ``,
 }
 
-func coordinatorRun(config MinionConfig, cmd *Command, args []string) {
+func coordinatorRun(config minion.MinionConfig, cmd *Command, args []string) {
 	log.Printf("Bringing coordinator online\n")
 
 	l, err := service.ListenFromKeys(

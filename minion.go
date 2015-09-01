@@ -24,17 +24,19 @@ func init() {
 
 type minionService struct {
 	service.Node
+
+	Config minion.MinionConfig
 }
 
 func (m *minionService) Register() {
 	if *archs == "" {
 		log.Fatalf("No archs given\n")
 	}
-	minion := minion.NewMinionRemote(strings.Split(*archs, ","))
+	minion := minion.NewMinionRemote(m.Config, strings.Split(*archs, ","))
 	rpc.Register(&minion)
 }
 
-func minionRun(config MinionConfig, cmd *Command, args []string) {
+func minionRun(config minion.MinionConfig, cmd *Command, args []string) {
 	log.Printf("Bringing Minion online\n")
 	node := minionService{}
 	node.Register()

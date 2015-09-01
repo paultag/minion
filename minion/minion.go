@@ -15,7 +15,7 @@ type MinionRemote struct {
 	arches []string
 }
 
-func NewMinionRemote(arches []string) MinionRemote {
+func NewMinionRemote(config MinionConfig, arches []string) MinionRemote {
 	return MinionRemote{arches: arches}
 }
 

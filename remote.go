@@ -14,7 +14,7 @@ var remoteCommand = Command{
 	Usage: ``,
 }
 
-func remoteRun(config MinionConfig, cmd *Command, args []string) {
+func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 	conn, err := service.DialFromKeys(
 		fmt.Sprintf("%s:%d", config.Host, config.Port),
 		config.Cert, config.Key, config.CaCert,
@@ -32,9 +32,9 @@ func remoteRun(config MinionConfig, cmd *Command, args []string) {
 		Arch: "amd64",
 		DSC:  "https://people.debian.org/~paultag/tmp/fluxbox_1.3.6~rc1-1.dsc",
 		Upload: minion.Upload{
-			"Host":    "localhost",
-			"Port":    1984,
-			"Archive": "foo",
+			Host:    "localhost",
+			Port:    1984,
+			Archive: "foo",
 		},
 	})
 	log.Printf("Queued\n")
