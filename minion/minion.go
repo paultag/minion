@@ -53,6 +53,8 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	log.Printf("Doing a build for %s -- waiting\n", i)
 	cmd.Run()
 	log.Printf("Complete.")
+
+	/* dsend this to the server target */
 	return nil
 }
 
