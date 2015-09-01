@@ -1,11 +1,15 @@
 package minion
 
 import (
+	"fmt"
 	"log"
 	"net/rpc"
 	"os"
 	"os/exec"
+	"path"
+	"path/filepath"
 
+	"pault.ag/go/debian/control"
 	"pault.ag/go/descend/descend"
 	"pault.ag/go/sbuild"
 )
@@ -14,10 +18,11 @@ import (
 
 type MinionRemote struct {
 	arches []string
+	Config MinionConfig
 }
 
 func NewMinionRemote(config MinionConfig, arches []string) MinionRemote {
-	return MinionRemote{arches: arches}
+	return MinionRemote{arches: arches, Config: config}
 }
 
 func (m *MinionRemote) GetArches(i *bool, ret *[]string) error {
@@ -32,7 +37,7 @@ func attachToStdout(cmd *exec.Cmd) {
 }
 
 func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
-	cleanup, err := Tempdir()
+	cleanup, workdir, err := Tempdir()
 	if err != nil {
 		return err
 	}
@@ -55,9 +60,18 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	cmd.Run()
 	/* set ftbfs here */
 	log.Printf("Complete. Doing upload now")
+
 	/* dsend this to the server target */
-	err := UploadChanges(m.Config, i, "")
-	log.Printf("Complete. Uploaded.")
+	files, err := filepath.Glob(path.Join(workdir, "*changes"))
+	if err != nil {
+		return err
+	}
+
+	for _, changesFile := range files {
+		log.Printf("Uploading: %s\n", changesFile)
+		err = UploadChanges(m.Config, i, changesFile)
+		log.Printf("Uploaded.")
+	}
 	return err
 }
 
@@ -77,9 +91,7 @@ func UploadChanges(conf MinionConfig, job Build, changesPath string) error {
 		fmt.Sprintf("%s:%d", job.Upload.Host, job.Upload.Port),
 		job.Upload.Archive,
 	)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 /***************************/

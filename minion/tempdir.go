@@ -6,19 +6,19 @@ import (
 	"os"
 )
 
-func Tempdir() (func(), error) {
+func Tempdir() (func(), string, error) {
 	popdir, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	name, err := ioutil.TempDir("", "minion.")
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	err = os.Chdir(name)
 	if err != nil {
-		return nil, err
+		return nil, name, err
 	}
 
 	return func() {
@@ -30,5 +30,5 @@ func Tempdir() (func(), error) {
 		if err != nil {
 			fmt.Printf("Error during tmpdir cleanup!: %s", err)
 		}
-	}, nil
+	}, name, nil
 }
