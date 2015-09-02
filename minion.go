@@ -42,8 +42,8 @@ func (m *minionService) Register() {
 		}
 
 		buildableSuites = append(buildableSuites, minion.BuildableSuite{
-			Suite: "",
-			Arch:  "",
+			Suite: pair[0],
+			Arch:  pair[1],
 		})
 	}
 
