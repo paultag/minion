@@ -39,7 +39,7 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 		if err != nil {
 			if err == rpc.ErrShutdown {
 				log.Printf("Client disconnect: %s - %s\n", conn.Name, err)
-				m.BuildChannels.Get(suites[0].Arch) <- job
+				m.BuildChannels.Get(job.GetBuildChannelKey()) <- job
 				conn.Close()
 				return
 			}
