@@ -30,22 +30,22 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 		return
 	}
 
+	buildChannels := minion.GetBuildChannels(m.BuildChannels, suites)
+
 	for {
-		select {
-		case job := <-m.BuildChannels.Get(suites[0].Arch):
-			log.Printf("Telling %s to build\n", conn.Name)
-			ftbfs, err := client.Build(job)
-			if err != nil {
-				if err == rpc.ErrShutdown {
-					log.Printf("Client disconnect: %s - %s\n", conn.Name, err)
-					m.BuildChannels.Get(suites[0].Arch) <- job
-					conn.Close()
-					return
-				}
-				log.Printf("Abnormal exit: %s\n", err)
+		job := minion.NextBuild(buildChannels, 5)
+		log.Printf("Telling %s to build\n", conn.Name)
+		ftbfs, err := client.Build(job)
+		if err != nil {
+			if err == rpc.ErrShutdown {
+				log.Printf("Client disconnect: %s - %s\n", conn.Name, err)
+				m.BuildChannels.Get(suites[0].Arch) <- job
+				conn.Close()
+				return
 			}
-			log.Printf("FTBFS: %s", ftbfs)
+			log.Printf("Abnormal exit: %s\n", err)
 		}
+		log.Printf("FTBFS: %s", ftbfs)
 	}
 }
 

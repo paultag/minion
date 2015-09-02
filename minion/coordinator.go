@@ -30,6 +30,6 @@ type CoordinatorRemote struct {
 }
 
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
-	c.buildChannels.Get(build.Arch) <- build
+	c.buildChannels.Get(build.GetBuildChannelKey()) <- build
 	return nil
 }

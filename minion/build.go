@@ -1,5 +1,9 @@
 package minion
 
+import (
+	"fmt"
+)
+
 type Archive struct {
 	Root     string
 	Sections []string
@@ -23,6 +27,10 @@ type Build struct {
 	DSC      string
 	Arch     string
 	Upload   Upload
+}
+
+func (b Build) GetBuildChannelKey() string {
+	return fmt.Sprintf("%s-%s", b.Chroot.Target, b.Arch)
 }
 
 type BuildChannelMap map[string]chan Build

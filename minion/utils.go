@@ -30,7 +30,7 @@ func NextBuild(channels []chan Build, heartbeat time.Duration) Build {
 }
 
 func GetBuildChannels(
-	channels BuildChannelMap,
+	channels *BuildChannelMap,
 	suites []BuildableSuite,
 ) []chan Build {
 	ret := []chan Build{}
