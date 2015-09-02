@@ -26,6 +26,10 @@ type BuildableSuite struct {
 	Arch  string
 }
 
+func (b *BuildableSuite) GetKey() string {
+	return fmt.Sprintf("%s-%s", b.Suite, b.Arch)
+}
+
 func NewMinionRemote(config MinionConfig, suites []BuildableSuite) MinionRemote {
 	return MinionRemote{BuildableSuites: suites, Config: config}
 }
