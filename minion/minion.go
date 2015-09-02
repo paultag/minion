@@ -17,16 +17,21 @@ import (
 /***************************/
 
 type MinionRemote struct {
-	arches []string
-	Config MinionConfig
+	BuildableSuites []BuildableSuite
+	Config          MinionConfig
 }
 
-func NewMinionRemote(config MinionConfig, arches []string) MinionRemote {
-	return MinionRemote{arches: arches, Config: config}
+type BuildableSuite struct {
+	Suite string
+	Arch  string
 }
 
-func (m *MinionRemote) GetArches(i *bool, ret *[]string) error {
-	*ret = m.arches
+func NewMinionRemote(config MinionConfig, suites []BuildableSuite) MinionRemote {
+	return MinionRemote{BuildableSuites: suites, Config: config}
+}
+
+func (m *MinionRemote) GetBuildableSuites(i *bool, ret *[]BuildableSuite) error {
+	*ret = m.BuildableSuites
 	return nil
 }
 
@@ -100,10 +105,10 @@ type MinionProxy struct {
 	*rpc.Client
 }
 
-func (m *MinionProxy) GetArches() ([]string, error) {
+func (m *MinionProxy) GetBuildableSuites() ([]BuildableSuite, error) {
 	var c bool = true
-	ret := []string{}
-	return ret, m.Call("MinionRemote.GetArches", &c, &ret)
+	ret := []BuildableSuite{}
+	return ret, m.Call("MinionRemote.GetBuildableSuites", &c, &ret)
 }
 
 func (m *MinionProxy) Build(build Build) (bool, error) {

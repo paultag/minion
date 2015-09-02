@@ -16,10 +16,10 @@ var minionCommand = Command{
 	Usage: ``,
 }
 
-var archs *string
+var suites *string
 
 func init() {
-	archs = minionCommand.Flag.String("arch", "", "comma seperated arches")
+	suites = minionCommand.Flag.String("suites", "", "comma seperated suite:arch pairs")
 }
 
 type minionService struct {
@@ -29,10 +29,25 @@ type minionService struct {
 }
 
 func (m *minionService) Register() {
-	if *archs == "" {
-		log.Fatalf("No archs given\n")
+	if *suites == "" {
+		log.Fatalf("No suites given\n")
 	}
-	minion := minion.NewMinionRemote(m.Config, strings.Split(*archs, ","))
+
+	buildableSuites := []minion.BuildableSuite{}
+	suitePairs := strings.Split(*suites, ",")
+	for _, suitePair := range suitePairs {
+		pair := strings.Split(suitePair, ":")
+		if len(pair) != 2 {
+			panic(fmt.Errorf("Error! %s is an invalid suite pair", suitePair))
+		}
+
+		buildableSuites = append(buildableSuites, minion.BuildableSuite{
+			Suite: "",
+			Arch:  "",
+		})
+	}
+
+	minion := minion.NewMinionRemote(m.Config, buildableSuites)
 	rpc.Register(&minion)
 }
 

@@ -24,7 +24,7 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 	log.Printf("Got a connection from %s\n", conn.Name)
 	client := minion.MinionProxy{rpcClient}
 
-	arches, err := client.GetArches()
+	suites, err := client.GetBuildableSuites()
 	if err != nil {
 		log.Printf("Error: %s\n", err)
 		return
@@ -32,13 +32,13 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 
 	for {
 		select {
-		case job := <-m.BuildChannels.Get(arches[0]):
+		case job := <-m.BuildChannels.Get(suites[0].Arch):
 			log.Printf("Telling %s to build\n", conn.Name)
 			ftbfs, err := client.Build(job)
 			if err != nil {
 				if err == rpc.ErrShutdown {
 					log.Printf("Client disconnect: %s - %s\n", conn.Name, err)
-					m.BuildChannels.Get(arches[0]) <- job
+					m.BuildChannels.Get(suites[0].Arch) <- job
 					conn.Close()
 					return
 				}
