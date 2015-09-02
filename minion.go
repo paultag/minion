@@ -38,7 +38,7 @@ func (m *minionService) Register() {
 
 func minionRun(config minion.MinionConfig, cmd *Command, args []string) {
 	log.Printf("Bringing Minion online\n")
-	node := minionService{}
+	node := minionService{Config: config}
 	node.Register()
 	log.Printf("Diling coordinator\n")
 	conn, err := service.DialFromKeys(

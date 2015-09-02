@@ -30,7 +30,7 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 			Target: "unstable",
 		},
 		Arch: "amd64",
-		DSC:  "https://people.debian.org/~paultag/tmp/fluxbox_1.3.6~rc1-1.dsc",
+		DSC:  "http://http.debian.net/debian/pool/main/f/fbautostart/fbautostart_2.718281828-1.dsc",
 		Upload: minion.Upload{
 			Host:    "localhost",
 			Port:    1984,
