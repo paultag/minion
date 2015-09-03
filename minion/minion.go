@@ -60,11 +60,14 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	build.BuildDepResolver("aptitude")
 
 	for _, archive := range i.Archives {
-		cleanup, archiveKey, err := Download(archive.Key)
-		if err != nil {
-			return err
+		if archive.Key != "" {
+			cleanup, archiveKey, err := Download(archive.Key)
+			if err != nil {
+				return err
+			}
+			defer cleanup()
+			build.AddArgument("extra-repository-key", archiveKey)
 		}
-		defer cleanup()
 
 		build.AddArgument("extra-repository", fmt.Sprintf(
 			"deb %s %s %s",
@@ -72,7 +75,6 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 			archive.Suite,
 			strings.Join(archive.Sections, " "),
 		))
-		build.AddArgument("extra-repository-key", archiveKey)
 	}
 
 	build.Verbose()

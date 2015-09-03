@@ -27,10 +27,8 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 	proxy.QueueBuild(minion.Build{
 		Archives: []minion.Archive{
 			minion.Archive{
-				// Key:      "http://my.shed.bike/infra.asc",
-				Key:      "https://pault.ag/debian/",
-				Root:     "http://my.shed.bike/infra/",
-				Suite:    "unstable",
+				Root:     "http://http.debian.net/debian/",
+				Suite:    "experimental",
 				Sections: []string{"main"},
 			},
 		},
