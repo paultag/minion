@@ -5,6 +5,7 @@ import (
 )
 
 type Archive struct {
+	Key      string
 	Root     string
 	Sections []string
 	Suite    string

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"pault.ag/go/debian/control"
 	"pault.ag/go/descend/descend"
@@ -57,8 +58,24 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	build := sbuild.NewSbuild(i.Chroot.Chroot, i.Chroot.Target)
 	build.Arch(i.Arch)
 	build.BuildDepResolver("aptitude")
-	build.Verbose()
 
+	for _, archive := range i.Archives {
+		cleanup, archiveKey, err := Download(archive.Key)
+		if err != nil {
+			return err
+		}
+		defer cleanup()
+
+		build.AddArgument("extra-repository", fmt.Sprintf(
+			"deb %s %s %s",
+			archive.Root,
+			archive.Suite,
+			strings.Join(archive.Sections, " "),
+		))
+		build.AddArgument("extra-repository-key", archiveKey)
+	}
+
+	build.Verbose()
 	cmd, err := build.BuildCommand(i.DSC)
 	attachToStdout(cmd)
 
