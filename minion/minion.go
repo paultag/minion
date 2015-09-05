@@ -56,7 +56,11 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	/* We're in a tempdir, let's make it dirty */
 
 	build := sbuild.NewSbuild(i.Chroot.Chroot, i.Chroot.Target)
-	build.Arch(i.Arch)
+	if i.Arch == "all" {
+		build.AddFlag("--arch-all-only")
+	} else {
+		build.Arch(i.Arch)
+	}
 	build.BuildDepResolver("aptitude")
 
 	for _, archive := range i.Archives {
