@@ -10,7 +10,7 @@ import (
 
 var commands = []*Command{
 	&coordinatorCommand,
-	&remoteCommand,
+	&repreproCommand,
 	&minionCommand,
 }
 
