@@ -102,7 +102,7 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 			Target: incoming.Suite,
 		},
 		Arch: "amd64",
-		DSC:  path.Join(*fqdn, *archive, dscPath),
+		DSC:  fmt.Sprintf("http://%s", path.Join(*fqdn, *archive, dscPath)),
 		Upload: minion.Upload{
 			Host:    *fqdn,
 			Port:    1984,
