@@ -88,11 +88,15 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 	}
 	proxy := minion.CoordinatorProxy{service.Client(conn)}
 	log.Printf("Queueing build\n")
+
+	archiveRoot := fmt.Sprintf("http://%s", path.Join(*fqdn, *archive))
+
 	proxy.QueueBuild(minion.Build{
 		Archives: []minion.Archive{
 			/* Add in the "PPA" to the build */
 			minion.Archive{
-				Root:     path.Join(*fqdn, *archive),
+				Root:     archiveRoot,
+				Key:      fmt.Sprintf("%s.asc", archiveRoot),
 				Suite:    incoming.Suite,
 				Sections: []string{incoming.Component},
 			},
@@ -102,7 +106,7 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 			Target: incoming.Suite,
 		},
 		Arch: "amd64",
-		DSC:  fmt.Sprintf("http://%s", path.Join(*fqdn, *archive, dscPath)),
+		DSC:  fmt.Sprintf("%s/%s", archiveRoot, dscPath),
 		Upload: minion.Upload{
 			Host:    *fqdn,
 			Port:    1984,
