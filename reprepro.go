@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"pault.ag/go/minion/minion"
+	"pault.ag/go/reprepro"
 	"pault.ag/go/service"
 )
 
@@ -91,27 +92,34 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 
 	archiveRoot := fmt.Sprintf("http://%s", path.Join(*fqdn, *archive))
 
-	proxy.QueueBuild(minion.Build{
-		Archives: []minion.Archive{
-			/* Add in the "PPA" to the build */
-			minion.Archive{
-				Root:     archiveRoot,
-				Key:      fmt.Sprintf("%s.asc", archiveRoot),
-				Suite:    incoming.Suite,
-				Sections: []string{incoming.Component},
+	repo := reprepro.GetWorkingRepo()
+	buildNeeding, err := repo.BuildNeeding(incoming.Suite, "any", &incoming.Package)
+	if err != nil {
+		log.Fatalf("Error! %s\n", err)
+	}
+
+	for _, build := range buildNeeding {
+		proxy.QueueBuild(minion.Build{
+			Archives: []minion.Archive{
+				minion.Archive{
+					Root:     archiveRoot,
+					Key:      fmt.Sprintf("%s.asc", archiveRoot),
+					Suite:    incoming.Suite,
+					Sections: []string{incoming.Component},
+				},
 			},
-		},
-		Chroot: minion.Chroot{
-			Chroot: incoming.Suite,
-			Target: incoming.Suite,
-		},
-		Arch: "amd64",
-		DSC:  fmt.Sprintf("%s/%s", archiveRoot, dscPath),
-		Upload: minion.Upload{
-			Host:    *fqdn,
-			Port:    1984,
-			Archive: *archive,
-		},
-	})
+			Chroot: minion.Chroot{
+				Chroot: incoming.Suite,
+				Target: incoming.Suite,
+			},
+			Arch: build.Arch,
+			DSC:  fmt.Sprintf("%s/%s", archiveRoot, dscPath),
+			Upload: minion.Upload{
+				Host:    *fqdn,
+				Port:    1984,
+				Archive: *archive,
+			},
+		})
+	}
 	log.Printf("Queued\n")
 }
