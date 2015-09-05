@@ -57,6 +57,7 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 
 	build := sbuild.NewSbuild(i.Chroot.Chroot, i.Chroot.Target)
 	if i.Arch == "all" {
+		build.BuildArch("all")
 		build.AddFlag("--arch-all-only")
 	} else {
 		build.Arch(i.Arch)
