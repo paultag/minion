@@ -1,0 +1,5 @@
+Subject: FTBFS on {{.Minion}} -- {{.Job.Arch}} ({{.Job.DSC}})
+From: Enqueued <{{.From}}>
+To:   {{.To}}
+
+{{.Job}}
