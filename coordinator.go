@@ -5,14 +5,18 @@ import (
 	"log"
 	"net/rpc"
 
+	"pault.ag/go/mailer"
 	"pault.ag/go/minion/minion"
 	"pault.ag/go/service"
 )
+
+var Mailer *mailer.Mailer
 
 type coordinatorService struct {
 	service.Coordinator
 
 	BuildChannels *minion.BuildChannelMap
+	Config        *minion.MinionConfig
 }
 
 func (m *coordinatorService) Register() {
@@ -45,7 +49,19 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 			}
 			log.Printf("Abnormal exit: %s\n", err)
 		}
-		log.Printf("FTBFS: %s", ftbfs)
+		if ftbfs {
+			log.Printf("FTBFS")
+
+			if Mailer != nil {
+				if err := Mailer.Mail(
+					[]string{m.Config.Administrator},
+					"ftbfs",
+					job,
+				); err != nil {
+					log.Printf("Error: %s", err)
+				}
+			}
+		}
 	}
 }
 
@@ -57,6 +73,14 @@ var coordinatorCommand = Command{
 
 func coordinatorRun(config minion.MinionConfig, cmd *Command, args []string) {
 	log.Printf("Bringing coordinator online\n")
+	var err error
+
+	if config.Templates != "" {
+		Mailer, err = mailer.NewMailer(config.Templates)
+		if err != nil {
+			log.Fatal("%s\n", err)
+		}
+	}
 
 	l, err := service.ListenFromKeys(
 		fmt.Sprintf("%s:%d", config.Host, config.Port),
@@ -69,6 +93,7 @@ func coordinatorRun(config minion.MinionConfig, cmd *Command, args []string) {
 	buildChannel := minion.BuildChannelMap{}
 	coordinator := coordinatorService{
 		BuildChannels: &buildChannel,
+		Config:        &config,
 	}
 	log.Printf("Great, waiting for Minions, and telling them what to do!\n")
 	service.Handle(l, &coordinator)

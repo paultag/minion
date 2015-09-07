@@ -89,7 +89,7 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 		return err
 	}
 	log.Printf("Doing a build for %s -- waiting\n", i)
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		*ftbfs = true
 		return nil
