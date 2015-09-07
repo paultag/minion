@@ -89,8 +89,14 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 		return err
 	}
 	log.Printf("Doing a build for %s -- waiting\n", i)
-	cmd.Run()
-	/* set ftbfs here */
+	err := cmd.Run()
+	if err != nil {
+		*ftbfs = true
+		return nil
+	}
+
+	/* Right, so we've got a complete upload, let's go ahead and dput
+	 * this sucka. */
 	log.Printf("Complete. Doing upload now")
 
 	/* dsend this to the server target */
