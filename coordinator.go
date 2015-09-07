@@ -12,6 +12,13 @@ import (
 
 var Mailer *mailer.Mailer
 
+type MailableJob struct {
+	Job    minion.Build
+	To     string
+	From   string
+	Minion string
+}
+
 type coordinatorService struct {
 	service.Coordinator
 
@@ -56,7 +63,12 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 				if err := Mailer.Mail(
 					[]string{m.Config.Administrator},
 					"ftbfs",
-					job,
+					&MailableJob{
+						Job:    job,
+						To:     m.Config.Administrator,
+						From:   conn.Name,
+						Minion: conn.Name,
+					},
 				); err != nil {
 					log.Printf("Error: %s", err)
 				}
