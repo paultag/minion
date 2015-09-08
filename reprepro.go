@@ -99,27 +99,40 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 	}
 
 	for _, build := range buildNeeding {
-		proxy.QueueBuild(minion.Build{
-			Archives: []minion.Archive{
-				minion.Archive{
-					Root:     archiveRoot,
-					Key:      fmt.Sprintf("%s.asc", archiveRoot),
-					Suite:    incoming.Suite,
-					Sections: []string{incoming.Component},
-				},
-			},
-			Chroot: minion.Chroot{
-				Chroot: incoming.Suite,
-				Target: incoming.Suite,
-			},
-			Arch: build.Arch,
-			DSC:  fmt.Sprintf("%s/%s", archiveRoot, dscPath),
-			Upload: minion.Upload{
-				Host:    *fqdn,
-				Port:    1984,
-				Archive: *archive,
-			},
-		})
+		QueueBuildNeeding(proxy, archiveRoot, build, incoming,
+			dscPath, *fqdn, *archive)
 	}
 	log.Printf("Queued\n")
+}
+
+func QueueBuildNeeding(
+	proxy minion.CoordinatorProxy,
+	archiveRoot string,
+	build reprepro.BuildNeedingPackage,
+	incoming Incoming,
+	dscPath string,
+	uploadHost string,
+	uploadArchive string,
+) {
+	proxy.QueueBuild(minion.Build{
+		Archives: []minion.Archive{
+			minion.Archive{
+				Root:     archiveRoot,
+				Key:      fmt.Sprintf("%s.asc", archiveRoot),
+				Suite:    incoming.Suite,
+				Sections: []string{incoming.Component},
+			},
+		},
+		Chroot: minion.Chroot{
+			Chroot: incoming.Suite,
+			Target: incoming.Suite,
+		},
+		Arch: build.Arch,
+		DSC:  fmt.Sprintf("%s/%s", archiveRoot, dscPath),
+		Upload: minion.Upload{
+			Host:    uploadHost,
+			Port:    1984,
+			Archive: uploadArchive,
+		},
+	})
 }
