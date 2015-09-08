@@ -65,8 +65,6 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 					"ftbfs",
 					&MailableJob{
 						Job:    job,
-						To:     m.Config.Administrator,
-						From:   conn.Name,
 						Minion: conn.Name,
 					},
 				); err != nil {
