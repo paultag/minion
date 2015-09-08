@@ -74,11 +74,11 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 		return
 	}
 
-	dscPath, err := incoming.GetDSC()
-	if err != nil {
-		log.Fatalf("Error! %s\n", err)
-	}
-	log.Printf("%s\n", dscPath)
+	// dscPath, err := incoming.GetDSC()
+	// if err != nil {
+	// 	log.Fatalf("Error! %s\n", err)
+	// }
+	// log.Printf("%s\n", dscPath)
 
 	conn, err := service.DialFromKeys(
 		fmt.Sprintf("%s:%d", config.Host, config.Port),
@@ -100,7 +100,7 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 
 	for _, build := range buildNeeding {
 		QueueBuildNeeding(proxy, archiveRoot, build, incoming.Suite,
-			incoming.Component, dscPath, *fqdn, *archive)
+			incoming.Component, *fqdn, *archive)
 	}
 	log.Printf("Queued\n")
 }
@@ -111,7 +111,6 @@ func QueueBuildNeeding(
 	build reprepro.BuildNeedingPackage,
 	suite string,
 	component string,
-	dscPath string,
 	uploadHost string,
 	uploadArchive string,
 ) {
@@ -129,7 +128,7 @@ func QueueBuildNeeding(
 			Target: suite,
 		},
 		Arch: build.Arch,
-		DSC:  fmt.Sprintf("%s/%s", archiveRoot, dscPath),
+		DSC:  fmt.Sprintf("%s/%s", archiveRoot, build.Location),
 		Upload: minion.Upload{
 			Host:    uploadHost,
 			Port:    1984,

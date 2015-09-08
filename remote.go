@@ -24,8 +24,21 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 	}
 	proxy := minion.CoordinatorProxy{service.Client(conn)}
 
-	needs, err := proxy.GetBuildNeeding("infra", "unstable", "any", "")
-	for _, need := range needs {
-		log.Printf("%s\n", need)
+	for _, archive := range args {
+		needs, err := proxy.GetBuildNeeding(archive, "unstable", "any", "")
+		if err != nil {
+			log.Fatalf("%s", err)
+		}
+		for _, need := range needs {
+			QueueBuildNeeding(
+				proxy,
+				fmt.Sprintf("http://%s/%s", config.Host, archive),
+				need,
+				"unstable",
+				"main",
+				config.Host,
+				archive,
+			)
+		}
 	}
 }

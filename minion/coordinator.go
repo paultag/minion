@@ -2,6 +2,7 @@ package minion
 
 import (
 	"fmt"
+	"log"
 	"net/rpc"
 	"path"
 
@@ -55,6 +56,7 @@ type CoordinatorRemote struct {
 }
 
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
+	log.Printf("Enqueueing build: %s\n", build)
 	c.buildChannels.Get(build.GetBuildChannelKey()) <- build
 	return nil
 }
