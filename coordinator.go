@@ -109,5 +109,4 @@ func coordinatorRun(config minion.MinionConfig, cmd *Command, args []string) {
 	}
 	log.Printf("Great, waiting for Minions, and telling them what to do!\n")
 	service.Handle(l, &coordinator)
-
 }
