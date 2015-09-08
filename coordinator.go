@@ -14,8 +14,6 @@ var Mailer *mailer.Mailer
 
 type MailableJob struct {
 	Job    minion.Build
-	To     string
-	From   string
 	Minion string
 }
 
