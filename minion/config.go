@@ -10,4 +10,5 @@ type MinionConfig struct {
 
 	Administrator string `flag:"administrator" description:""`
 	Templates     string `flag:"templates" description:"templates"`
+	Repos         string `flag:"repos" description:"repos"`
 }

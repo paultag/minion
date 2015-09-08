@@ -25,7 +25,7 @@ type coordinatorService struct {
 }
 
 func (m *coordinatorService) Register() {
-	remote := minion.NewCoordinatorRemote(m.BuildChannels)
+	remote := minion.NewCoordinatorRemote(m.BuildChannels, m.Config)
 	rpc.Register(&remote)
 }
 

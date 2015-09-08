@@ -12,6 +12,7 @@ var commands = []*Command{
 	&coordinatorCommand,
 	&repreproCommand,
 	&minionCommand,
+	&remoteCommand,
 }
 
 /* This encapsulates a Minion command to be implemented by the internals.
