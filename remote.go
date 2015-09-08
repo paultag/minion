@@ -30,6 +30,7 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 			log.Fatalf("%s", err)
 		}
 		for _, need := range needs {
+			log.Printf("Marking %s for build on %s", need.Location, need.Arch)
 			QueueBuildNeeding(
 				proxy,
 				fmt.Sprintf("http://%s/%s", config.Host, archive),
