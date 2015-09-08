@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/rpc"
 	"strings"
+	"time"
 
 	"pault.ag/go/minion/minion"
 	"pault.ag/go/service"
@@ -51,18 +52,28 @@ func (m *minionService) Register() {
 	rpc.Register(&minion)
 }
 
-func minionRun(config minion.MinionConfig, cmd *Command, args []string) {
-	log.Printf("Bringing Minion online\n")
-	node := minionService{Config: config}
-	node.Register()
+func minionRunServe(config minion.MinionConfig) {
 	log.Printf("Diling coordinator\n")
 	conn, err := service.DialFromKeys(
 		fmt.Sprintf("%s:%d", config.Host, config.Port),
 		config.Cert, config.Key, config.CaCert,
 	)
 	if err != nil {
-		log.Fatalf("Error! %s\n", err)
+		log.Printf("Error! %s\n", err)
+		return
 	}
 	log.Printf("Doing what they say!\n")
 	service.ServeConn(conn)
+}
+
+func minionRun(config minion.MinionConfig, cmd *Command, args []string) {
+	log.Printf("Bringing Minion online\n")
+	node := minionService{Config: config}
+	node.Register()
+
+	for {
+		minionRunServe(config)
+		log.Printf("System fell down. Crap. Waiting a minute and retyring")
+		time.Sleep(time.Second * 60)
+	}
 }
