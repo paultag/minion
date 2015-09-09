@@ -1,13 +1,13 @@
 package minion
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"net/http"
 	"net/rpc"
 	"os"
 	"os/exec"
-	"path"
-	"path/filepath"
 	"strings"
 
 	"pault.ag/go/debian/control"
@@ -50,12 +50,29 @@ func attachToStdout(cmd *exec.Cmd) {
 	cmd.Stdin = os.Stdin
 }
 
+func ParseDscURL(url string) (*control.DSC, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	buf := bufio.NewReader(resp.Body)
+	return control.ParseDsc(buf, url)
+
+}
+
 func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
+	dsc, err := ParseDscURL(i.DSC)
+	if err != nil {
+		return err
+	}
+
 	cleanup, workdir, err := Tempdir()
 	if err != nil {
 		return err
 	}
 	defer cleanup()
+	log.Printf("%s\n", workdir)
 
 	/* We're in a tempdir, let's make it dirty */
 
@@ -101,26 +118,38 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	}
 	log.Printf("Doing a build for %s -- waiting\n", i)
 	err = cmd.Run()
+
+	changesFile := Filename(dsc.Source, dsc.Version, i.Arch, "changes")
+	logPath := Filename(dsc.Source, dsc.Version, i.Arch, "build")
+
 	if err != nil {
+		changes, err := LogChangesFromDsc(logPath, *dsc, i.Chroot.Target, i.Arch)
+		if err != nil {
+			return err
+		}
+		fd, err := os.Create(changesFile)
+		if err != nil {
+			return err
+		}
+		defer fd.Close()
+		_, err = fd.Write([]byte(changes))
+		if err != nil {
+			return err
+		}
+		err = UploadChanges(m.Config, i, changesFile)
 		*ftbfs = true
-		return nil
+		return err
 	}
 
 	/* Right, so we've got a complete upload, let's go ahead and dput
 	 * this sucka. */
 	log.Printf("Complete. Doing upload now")
 
-	/* dsend this to the server target */
-	files, err := filepath.Glob(path.Join(workdir, "*changes"))
-	if err != nil {
-		return err
-	}
+	AppendLogToChanges(logPath, changesFile, i.Arch)
 
-	for _, changesFile := range files {
-		log.Printf("Uploading: %s\n", changesFile)
-		err = UploadChanges(m.Config, i, changesFile)
-		log.Printf("Uploaded.")
-	}
+	log.Printf("Uploading: %s\n", changesFile)
+	err = UploadChanges(m.Config, i, changesFile)
+	log.Printf("Uploaded.")
 	return err
 }
 
