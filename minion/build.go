@@ -22,12 +22,18 @@ type Upload struct {
 	Archive string
 }
 
+type BinNMU struct {
+	Changelog string
+	Version   string
+}
+
 type Build struct {
 	Archives []Archive
 	Chroot   Chroot
 	DSC      string
 	Arch     string
 	Upload   Upload
+	BinNMU   BinNMU
 }
 
 func (b Build) GetBuildChannelKey() string {

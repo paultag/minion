@@ -25,6 +25,11 @@ func (p *CoordinatorProxy) QueueBuild(build Build) error {
 	return p.Call("CoordinatorRemote.QueueBuild", build, &reply)
 }
 
+func (p *CoordinatorProxy) GetQueueLengths() (map[string]int, error) {
+	ret := map[string]int{}
+	return ret, p.Call("CoordinatorRemote.GetQueueLengths", false, &ret)
+}
+
 func (p *CoordinatorProxy) GetBuildNeeding(repo, suite, arch, pkg string) ([]reprepro.BuildNeedingPackage, error) {
 	reply := []reprepro.BuildNeedingPackage{}
 	return reply, p.Call("CoordinatorRemote.GetBuildNeeding", BuildNeedingRequest{
@@ -58,6 +63,15 @@ type CoordinatorRemote struct {
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
 	log.Printf("Enqueueing build: %s\n", build)
 	c.buildChannels.Get(build.GetBuildChannelKey()) <- build
+	return nil
+}
+
+func (c *CoordinatorRemote) GetQueueLengths(incoming bool, ret *map[string]int) error {
+	myStatus := map[string]int{}
+	for key, value := range *c.buildChannels {
+		myStatus[key] = len(value)
+	}
+	*ret = myStatus
 	return nil
 }
 
