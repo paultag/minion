@@ -42,9 +42,18 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 }
 
 func Status(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []string) {
+	minions, err := proxy.GetOnlineMinions()
+	if err != nil {
+		log.Fatalf("%s\n", err)
+	}
+
 	queueLengths, err := proxy.GetQueueLengths()
 	if err != nil {
 		log.Fatalf("%s\n", err)
+	}
+
+	for _, minion := range minions {
+		fmt.Printf("%s - online\n", minion)
 	}
 	for name, length := range queueLengths {
 		fmt.Printf("%s - %d pending job(s)\n", name, length)

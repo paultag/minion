@@ -30,6 +30,11 @@ func (p *CoordinatorProxy) GetQueueLengths() (map[string]int, error) {
 	return ret, p.Call("CoordinatorRemote.GetQueueLengths", false, &ret)
 }
 
+func (p *CoordinatorProxy) GetOnlineMinions() ([]string, error) {
+	reply := []string{}
+	return reply, p.Call("CoordinatorRemote.GetOnlineMinions", false, &reply)
+}
+
 func (p *CoordinatorProxy) GetBuildNeeding(repo, suite, arch, pkg string) ([]reprepro.BuildNeedingPackage, error) {
 	reply := []reprepro.BuildNeedingPackage{}
 	return reply, p.Call("CoordinatorRemote.GetBuildNeeding", BuildNeedingRequest{
@@ -51,18 +56,33 @@ func (p *CoordinatorProxy) GetBuildNeeding(repo, suite, arch, pkg string) ([]rep
 func NewCoordinatorRemote(
 	buildChannels *BuildChannelMap,
 	config *MinionConfig,
+	clients *OnlineClients,
 ) CoordinatorRemote {
-	return CoordinatorRemote{buildChannels: buildChannels, Config: config}
+	return CoordinatorRemote{
+		buildChannels: buildChannels,
+		Config:        config,
+		Clients:       clients,
+	}
 }
 
 type CoordinatorRemote struct {
 	buildChannels *BuildChannelMap
 	Config        *MinionConfig
+	Clients       *OnlineClients
 }
 
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
 	log.Printf("Enqueueing build: %s\n", build)
 	c.buildChannels.Get(build.GetBuildChannelKey()) <- build
+	return nil
+}
+
+func (c *CoordinatorRemote) GetOnlineMinions(incoming bool, ret *[]string) error {
+	myStatus := []string{}
+	for client, _ := range *c.Clients {
+		myStatus = append(myStatus, client.Name)
+	}
+	*ret = myStatus
 	return nil
 }
 

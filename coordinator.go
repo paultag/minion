@@ -17,31 +17,16 @@ type MailableJob struct {
 	Minion string
 }
 
-type OnlineClient struct {
-	Name  string
-	Proxy *minion.MinionProxy
-}
-
-type OnlineClients map[*OnlineClient]bool
-
-func (o OnlineClients) Remove(client *OnlineClient) {
-	delete(o, client)
-}
-
-func (o OnlineClients) Add(client *OnlineClient) {
-	o[client] = true
-}
-
 type coordinatorService struct {
 	service.Coordinator
 
 	BuildChannels *minion.BuildChannelMap
 	Config        *minion.MinionConfig
-	Clients       OnlineClients
+	Clients       *minion.OnlineClients
 }
 
 func (m *coordinatorService) Register() {
-	remote := minion.NewCoordinatorRemote(m.BuildChannels, m.Config)
+	remote := minion.NewCoordinatorRemote(m.BuildChannels, m.Config, m.Clients)
 	rpc.Register(&remote)
 }
 
@@ -49,7 +34,7 @@ func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 	log.Printf("Got a connection from %s\n", conn.Name)
 	client := minion.MinionProxy{rpcClient}
 
-	onlineClient := OnlineClient{Name: conn.Name, Proxy: &client}
+	onlineClient := minion.OnlineClient{Name: conn.Name, Proxy: &client}
 	m.Clients.Add(&onlineClient)
 	defer m.Clients.Remove(&onlineClient)
 
@@ -119,9 +104,11 @@ func coordinatorRun(config minion.MinionConfig, cmd *Command, args []string) {
 	}
 
 	buildChannel := minion.BuildChannelMap{}
+	clients := minion.OnlineClients{}
 	coordinator := coordinatorService{
 		BuildChannels: &buildChannel,
 		Config:        &config,
+		Clients:       &clients,
 	}
 	log.Printf("Great, waiting for Minions, and telling them what to do!\n")
 	service.Handle(l, &coordinator)
