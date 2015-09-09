@@ -57,7 +57,7 @@ func ParseDscURL(url string) (*control.DSC, error) {
 	}
 	defer resp.Body.Close()
 	buf := bufio.NewReader(resp.Body)
-	return control.ParseDsc(buf, url)
+	return control.ParseDsc(buf, "")
 
 }
 
@@ -71,24 +71,41 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	if err != nil {
 		return err
 	}
-	defer cleanup()
-	log.Printf("%s\n", workdir)
+	// defer cleanup()
+	log.Printf("%s\n", workdir, cleanup)
 
 	/* We're in a tempdir, let's make it dirty */
 
 	build := sbuild.NewSbuild(i.Chroot.Chroot, i.Chroot.Target)
+	chrootArch := i.Arch
+
 	if i.Arch == "all" {
+		chrootArch = "amd64" // XXX: FIX ME
+		build.Arch(chrootArch)
 		build.AddFlag("--arch-all-only")
 	} else {
 		build.Arch(i.Arch)
 	}
 	build.BuildDepResolver("aptitude")
 
+	buildVersion := dsc.Version
+
 	if i.BinNMU.Version != "" {
 		build.AddArgument("uploader", "Foo Bar <example@example.com>")
 		build.AddArgument("maintainer", "Foo Bar <example@example.com>")
 		build.AddArgument("make-binNMU", i.BinNMU.Changelog)
 		build.AddArgument("binNMU", i.BinNMU.Version)
+
+		/* In addition, let's fix buildVersion up */
+		a := func(orig, v string) string {
+			return fmt.Sprintf("%s+b%s", orig, v)
+		}
+
+		if buildVersion.IsNative() {
+			buildVersion.Version = a(buildVersion.Version, i.BinNMU.Version)
+		} else {
+			buildVersion.Revision = a(buildVersion.Revision, i.BinNMU.Version)
+		}
 	}
 
 	for _, archive := range i.Archives {
@@ -117,11 +134,11 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 		return err
 	}
 	log.Printf("Doing a build for %s -- waiting\n", i)
+
+	changesFile := Filename(dsc.Source, buildVersion, chrootArch, "changes")
+	logPath := Filename(dsc.Source, buildVersion, chrootArch, "build")
+
 	err = cmd.Run()
-
-	changesFile := Filename(dsc.Source, dsc.Version, i.Arch, "changes")
-	logPath := Filename(dsc.Source, dsc.Version, i.Arch, "build")
-
 	if err != nil {
 		changes, err := LogChangesFromDsc(logPath, *dsc, i.Chroot.Target, i.Arch)
 		if err != nil {
