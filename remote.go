@@ -36,6 +36,8 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 		Status(config, proxy, args[1:])
 	case "binNMU":
 		BinNMU(config, proxy, args[1:])
+	default:
+		log.Fatalf("Unknown command :(")
 	}
 }
 
