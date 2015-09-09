@@ -63,6 +63,11 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	}
 	build.BuildDepResolver("aptitude")
 
+	if i.BinNMU.Version != "" {
+		build.AddArgument("make-binNMU", i.BinNMU.Changelog)
+		build.AddArgument("binNMU", i.BinNMU.Version)
+	}
+
 	for _, archive := range i.Archives {
 		if archive.Key != "" {
 			cleanup, archiveKey, err := Download(archive.Key)
