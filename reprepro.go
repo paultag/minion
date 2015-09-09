@@ -101,7 +101,7 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 	for _, build := range buildNeeding {
 		dscPath := fmt.Sprintf("%s/%s", archiveRoot, build.Location)
 		QueueBuildNeeding(proxy, archiveRoot, build.Arch, dscPath, incoming.Suite,
-			incoming.Component, *fqdn, *archive)
+			incoming.Component, *fqdn, *archive, "", "")
 	}
 	log.Printf("Queued\n")
 }
@@ -115,6 +115,8 @@ func QueueBuildNeeding(
 	component string,
 	uploadHost string,
 	uploadArchive string,
+	binNMUVersion string,
+	binNMUChangelog string,
 ) {
 	proxy.QueueBuild(minion.Build{
 		Archives: []minion.Archive{
@@ -128,6 +130,10 @@ func QueueBuildNeeding(
 		Chroot: minion.Chroot{
 			Chroot: suite,
 			Target: suite,
+		},
+		BinNMU: minion.BinNMU{
+			Version:   binNMUVersion,
+			Changelog: binNMUChangelog,
 		},
 		Arch: arch,
 		DSC:  dscPath,

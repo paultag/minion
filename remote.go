@@ -91,6 +91,8 @@ func BinNMU(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []st
 		"main",
 		config.Host,
 		*archive,
+		*version,
+		*changes,
 	)
 }
 
@@ -112,6 +114,8 @@ func Backfill(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []
 				"main",
 				config.Host,
 				archive,
+				"",
+				"",
 			)
 		}
 	}

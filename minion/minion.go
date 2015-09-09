@@ -64,6 +64,8 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	build.BuildDepResolver("aptitude")
 
 	if i.BinNMU.Version != "" {
+		build.AddArgument("uploader", "Foo Bar <example@example.com>")
+		build.AddArgument("maintainer", "Foo Bar <example@example.com>")
 		build.AddArgument("make-binNMU", i.BinNMU.Changelog)
 		build.AddArgument("binNMU", i.BinNMU.Version)
 	}
