@@ -82,41 +82,43 @@ func BinNMU(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []st
 		ensure(s.Value, s.Name)
 	}
 
-	QueueBuildNeeding(
-		proxy,
-		fmt.Sprintf("http://%s/%s", config.Host, *archive),
-		*arch,
-		*dsc,
-		*suite,
-		"main",
+	build := minion.NewBuild(
 		config.Host,
 		*archive,
-		*version,
-		*changes,
+		*suite,
+		"main",
+		*arch,
+		*dsc,
 	)
+	build.BinNMU = minion.BinNMU{
+		Version:   *version,
+		Changelog: *changes,
+	}
+	proxy.QueueBuild(build)
 }
 
 func Backfill(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []string) {
+
+	suite := "unstable"
+
 	for _, archive := range args {
-		needs, err := proxy.GetBuildNeeding(archive, "unstable", "any", "")
+		needs, err := proxy.GetBuildNeeding(archive, suite, "any", "")
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
 		for _, need := range needs {
 			log.Printf("%s [%s] - %s", archive, need.Arch, need.Location)
 			archiveRoot := fmt.Sprintf("http://%s/%s", config.Host, archive)
-			QueueBuildNeeding(
-				proxy,
-				archiveRoot,
-				need.Arch,
-				fmt.Sprintf("%s/%s", archiveRoot, need.Location),
-				"unstable",
-				"main",
+			dsc := fmt.Sprintf("%s/%s", archiveRoot, need.Location)
+			build := minion.NewBuild(
 				config.Host,
 				archive,
-				"",
-				"",
+				suite,
+				"main",
+				need.Arch,
+				dsc,
 			)
+			proxy.QueueBuild(build)
 		}
 	}
 }

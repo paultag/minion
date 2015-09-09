@@ -36,6 +36,33 @@ type Build struct {
 	BinNMU   BinNMU
 }
 
+/*
+ */
+func NewBuild(
+	host string,
+	archive string,
+	suite string,
+	component string,
+	arch string,
+	dsc string,
+) Build {
+	archiveRoot := fmt.Sprintf("http://%s/%s", host, archive)
+	return Build{
+		Archives: []Archive{
+			Archive{
+				Root:     archiveRoot,
+				Key:      fmt.Sprintf("%s.asc", archiveRoot),
+				Suite:    suite,
+				Sections: []string{component},
+			},
+		},
+		Chroot: Chroot{Chroot: suite, Target: suite},
+		Upload: Upload{Host: host, Port: 1984, Archive: archive},
+		Arch:   arch,
+		DSC:    dsc,
+	}
+}
+
 func (b Build) GetBuildChannelKey() string {
 	return fmt.Sprintf("%s-%s", b.Chroot.Target, b.Arch)
 }
