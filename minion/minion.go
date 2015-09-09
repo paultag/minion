@@ -40,6 +40,10 @@ func (m *MinionRemote) GetBuildableSuites(i *bool, ret *[]BuildableSuite) error 
 	return nil
 }
 
+func (m *MinionRemote) Heartbeat(i *bool, ret *bool) error {
+	return nil
+}
+
 func attachToStdout(cmd *exec.Cmd) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -154,4 +158,9 @@ func (m *MinionProxy) GetBuildableSuites() ([]BuildableSuite, error) {
 func (m *MinionProxy) Build(build Build) (bool, error) {
 	var ftbfs bool
 	return ftbfs, m.Call("MinionRemote.Build", build, &ftbfs)
+}
+
+func (m *MinionProxy) Heartbeat() error {
+	var alive bool
+	return m.Call("MinionRemote.Heartbeat", false, &alive)
 }

@@ -30,6 +30,11 @@ func (p *CoordinatorProxy) GetQueueLengths() (map[string]int, error) {
 	return ret, p.Call("CoordinatorRemote.GetQueueLengths", false, &ret)
 }
 
+func (p *CoordinatorProxy) Heartbeat() ([]string, error) {
+	reply := []string{}
+	return reply, p.Call("CoordinatorRemote.Heartbeat", false, &reply)
+}
+
 func (p *CoordinatorProxy) GetOnlineMinions() ([]string, error) {
 	reply := []string{}
 	return reply, p.Call("CoordinatorRemote.GetOnlineMinions", false, &reply)
@@ -74,6 +79,21 @@ type CoordinatorRemote struct {
 func (c *CoordinatorRemote) QueueBuild(build Build, r *interface{}) error {
 	log.Printf("Enqueueing build: %s\n", build)
 	c.buildChannels.Get(build.GetBuildChannelKey()) <- build
+	return nil
+}
+
+func (c *CoordinatorRemote) Heartbeat(incoming bool, ret *[]string) error {
+	myStatus := []string{}
+	for client, _ := range *c.Clients {
+		err := client.Proxy.Heartbeat()
+		if err != nil {
+			log.Printf("%s - %s\n", client, err)
+			c.Clients.Remove(client)
+			continue
+		}
+		myStatus = append(myStatus, client.Name)
+	}
+	*ret = myStatus
 	return nil
 }
 

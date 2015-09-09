@@ -42,7 +42,7 @@ func remoteRun(config minion.MinionConfig, cmd *Command, args []string) {
 }
 
 func Status(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []string) {
-	minions, err := proxy.GetOnlineMinions()
+	minions, err := proxy.Heartbeat()
 	if err != nil {
 		log.Fatalf("%s\n", err)
 	}
