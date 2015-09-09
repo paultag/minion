@@ -17,11 +17,27 @@ type MailableJob struct {
 	Minion string
 }
 
+type OnlineClient struct {
+	Name  string
+	Proxy *minion.MinionProxy
+}
+
+type OnlineClients map[*OnlineClient]bool
+
+func (o OnlineClients) Remove(client *OnlineClient) {
+	delete(o, client)
+}
+
+func (o OnlineClients) Add(client *OnlineClient) {
+	o[client] = true
+}
+
 type coordinatorService struct {
 	service.Coordinator
 
 	BuildChannels *minion.BuildChannelMap
 	Config        *minion.MinionConfig
+	Clients       OnlineClients
 }
 
 func (m *coordinatorService) Register() {
@@ -32,6 +48,10 @@ func (m *coordinatorService) Register() {
 func (m *coordinatorService) Handle(rpcClient *rpc.Client, conn *service.Conn) {
 	log.Printf("Got a connection from %s\n", conn.Name)
 	client := minion.MinionProxy{rpcClient}
+
+	onlineClient := OnlineClient{Name: conn.Name, Proxy: &client}
+	m.Clients.Add(&onlineClient)
+	defer m.Clients.Remove(&onlineClient)
 
 	suites, err := client.GetBuildableSuites()
 	if err != nil {
