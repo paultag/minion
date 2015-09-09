@@ -111,6 +111,7 @@ func BinNMU(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []st
 func Backfill(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []string) {
 
 	suite := "unstable"
+	/* Do a topsort of the .dsc files that need build, I guess */
 
 	for _, archive := range args {
 		needs, err := proxy.GetBuildNeeding(archive, suite, "any", "")
