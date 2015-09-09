@@ -62,6 +62,8 @@ func ParseDscURL(url string) (*control.DSC, error) {
 }
 
 func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
+	chrootArch := "amd64" // XXX: FIX THIS LIKE SO HARD
+
 	dsc, err := ParseDscURL(i.DSC)
 	if err != nil {
 		return err
@@ -77,10 +79,8 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	/* We're in a tempdir, let's make it dirty */
 
 	build := sbuild.NewSbuild(i.Chroot.Chroot, i.Chroot.Target)
-	chrootArch := i.Arch
 
 	if i.Arch == "all" {
-		chrootArch = "amd64" // XXX: FIX ME
 		build.Arch(chrootArch)
 		build.AddFlag("--arch-all-only")
 	} else {
@@ -135,12 +135,36 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	}
 	log.Printf("Doing a build for %s -- waiting\n", i)
 
-	changesFile := Filename(dsc.Source, buildVersion, chrootArch, "changes")
-	logPath := Filename(dsc.Source, buildVersion, chrootArch, "build")
+	// if i.Arch != chrootArch {
+	//	/* Rename */
+	// }
+
+	changesFile := Filename(dsc.Source, buildVersion, i.Arch, "changes")
+	logFile := Filename(dsc.Source, buildVersion, i.Arch, "build")
 
 	err = cmd.Run()
+
+	if i.Arch == "all" {
+		/* We have to play fixup here */
+		wrongChanges := Filename(dsc.Source, buildVersion, chrootArch, "changes")
+		if _, err := os.Stat(wrongChanges); os.IsExist(err) {
+			if err := os.Rename(
+				wrongChanges,
+				changesFile,
+			); err != nil {
+				return err
+			}
+		}
+
+		if err := os.Rename(
+			Filename(dsc.Source, buildVersion, chrootArch, "build"),
+			logFile,
+		); err != nil {
+			return err
+		}
+	}
 	if err != nil {
-		changes, err := LogChangesFromDsc(logPath, *dsc, i.Chroot.Target, i.Arch)
+		changes, err := LogChangesFromDsc(logFile, *dsc, i.Chroot.Target, i.Arch)
 		if err != nil {
 			return err
 		}
@@ -162,7 +186,7 @@ func (m *MinionRemote) Build(i Build, ftbfs *bool) error {
 	 * this sucka. */
 	log.Printf("Complete. Doing upload now")
 
-	AppendLogToChanges(logPath, changesFile, i.Arch)
+	AppendLogToChanges(logFile, changesFile, i.Arch)
 
 	log.Printf("Uploading: %s\n", changesFile)
 	err = UploadChanges(m.Config, i, changesFile)
