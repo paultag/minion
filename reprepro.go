@@ -74,12 +74,6 @@ func repreproRun(config minion.MinionConfig, cmd *Command, args []string) {
 		return
 	}
 
-	// dscPath, err := incoming.GetDSC()
-	// if err != nil {
-	// 	log.Fatalf("Error! %s\n", err)
-	// }
-	// log.Printf("%s\n", dscPath)
-
 	conn, err := service.DialFromKeys(
 		fmt.Sprintf("%s:%d", config.Host, config.Port),
 		config.Cert, config.Key, config.CaCert,
