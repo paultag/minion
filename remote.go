@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 
@@ -49,7 +50,48 @@ func Status(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []st
 }
 
 func BinNMU(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []string) {
-	log.Fatalf("Unimplemented")
+	ensure := func(x *string, arg string) {
+		if x != nil && *x != "" {
+			return
+		}
+		log.Fatalf("Missing argument %s", arg)
+	}
+
+	flags := flag.FlagSet{}
+
+	dsc := flags.String("dsc", "", "DSC to binNMU")
+	archive := flags.String("archive", "", "Archive to binNMU into")
+	arch := flags.String("arch", "", "Archive to binNMU into")
+	version := flags.String("version", "", "Version to use for the binNMU")
+	changes := flags.String("changes", "", "Changes to use for the binNMU")
+	suite := flags.String("suite", "", "suite to use for the binNMU")
+
+	flags.Parse(args)
+
+	for _, s := range []struct {
+		Name  string
+		Value *string
+	}{
+		{"dsc", dsc},
+		{"arch", arch},
+		{"archive", archive},
+		{"version", version},
+		{"changes", changes},
+		{"suite", suite},
+	} {
+		ensure(s.Value, s.Name)
+	}
+
+	QueueBuildNeeding(
+		proxy,
+		fmt.Sprintf("http://%s/%s", config.Host, *archive),
+		*arch,
+		*dsc,
+		*suite,
+		"main",
+		config.Host,
+		*archive,
+	)
 }
 
 func Backfill(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []string) {
@@ -60,10 +102,12 @@ func Backfill(config minion.MinionConfig, proxy minion.CoordinatorProxy, args []
 		}
 		for _, need := range needs {
 			log.Printf("%s [%s] - %s", archive, need.Arch, need.Location)
+			archiveRoot := fmt.Sprintf("http://%s/%s", config.Host, archive)
 			QueueBuildNeeding(
 				proxy,
-				fmt.Sprintf("http://%s/%s", config.Host, archive),
-				need,
+				archiveRoot,
+				need.Arch,
+				fmt.Sprintf("%s/%s", archiveRoot, need.Location),
 				"unstable",
 				"main",
 				config.Host,
